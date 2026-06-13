@@ -1,0 +1,11 @@
+{
+  "id": "Sts2WinratePreview",
+  "name": "StS2 Winrate Preview",
+  "author": "inggom",
+  "description": "맵에서 노드를 고르기 전에 현재 덱/유물/포션으로 다음 몬스터·엘리트·현재 막 보스에 대한 생존 위험도 밴드(여유/위험/치명)를 플로팅 표시. 별도 헤드리스 헬퍼 프로세스에서 실엔진 전투를 시뮬레이션하며, 본인 클라이언트 표시 전용 (read-only, 게임 상태 영향 없음).",
+  "version": "v0.1.0",
+  "has_pck": false,
+  "has_dll": true,
+  "dependencies": [],
+  "affects_gameplay": false
+}
