@@ -62,6 +62,20 @@ public sealed class WinrateHelperClient : IDisposable
         public string? seed { get; set; }
         public int startHp { get; set; }      // 0 = full HP
         public int startMaxHp { get; set; }   // 0 = character default
+
+        /// Policy the helper server uses to drive each combat.
+        /// null/empty => "plannern" (fast hand-tuned planner, the overlay default).
+        /// "clonehybrid" => disagreement-arbitration hybrid (more accurate, much
+        /// slower — opt-in via STS2_WINRATE_DECISION=clonehybrid).
+        public string? decision { get; set; } = DefaultDecision();
+    }
+
+    /// Reads the policy toggle once. Empty/unset keeps the fast planner so the
+    /// real-time overlay stays within its ~0.5s/query budget.
+    private static string? DefaultDecision()
+    {
+        var v = Environment.GetEnvironmentVariable("STS2_WINRATE_DECISION");
+        return string.IsNullOrWhiteSpace(v) ? null : v.Trim();
     }
 
     public sealed class WinrateResult
