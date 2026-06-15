@@ -6,6 +6,8 @@ A **map overlay for Slay the Spire 2** that shows a combat-risk band — **Safe 
 
 The estimate isn't a heuristic — it **simulates the real STS2 combat engine** in a separate headless helper process, using your **current deck, relics, potions and HP**. It is **read-only and never touches your game state.**
 
+> ⚠️ **The band is a prediction, not a guarantee.** Even a **100%** does **not** promise a win — it's the AI playing your current deck against *sampled* draws/encounters, so it reflects how a fight *tends* to go, not how *your* run will. Your own draws, targeting, and in-the-moment decisions can still lose a "Safe" fight (or win a "Danger" one). **Use it as guidance only.**
+
 ![overlay](docs/screenshot.png)
 
 ## Features

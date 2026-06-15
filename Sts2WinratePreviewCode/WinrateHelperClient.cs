@@ -286,6 +286,21 @@ public sealed class WinrateHelperClient : IDisposable
             return null;
         }
 
+        // Directory of the loaded game assembly (sts2.dll) = the player's game-data dir.
+        // Passed to the helper as STS2_DATA_DIR so it resolves sts2.dll at the real path.
+        private static string? _gameDataDir;
+        private static string? GameDataDir()
+        {
+            if (_gameDataDir != null) return _gameDataDir;
+            try
+            {
+                var loc = typeof(MegaCrit.Sts2.Core.Combat.CombatManager).Assembly.Location;
+                if (!string.IsNullOrEmpty(loc)) _gameDataDir = Path.GetDirectoryName(loc);
+            }
+            catch { }
+            return _gameDataDir;
+        }
+
         private bool EnsureStarted(string? exe, out string? error)
         {
             error = null;
@@ -305,6 +320,11 @@ public sealed class WinrateHelperClient : IDisposable
                 RedirectStandardError = true,
                 WorkingDirectory = Path.GetDirectoryName(exe) ?? Environment.CurrentDirectory,
             };
+            // Tell the helper where THIS player's game assemblies live (the dir of the loaded
+            // sts2.dll). The distributed helper bakes only a dev path, so without this it can't
+            // find sts2.dll on a machine where Steam is installed elsewhere.
+            var dataDir = GameDataDir();
+            if (!string.IsNullOrEmpty(dataDir)) psi.Environment["STS2_DATA_DIR"] = dataDir!;
             try
             {
                 _proc = Process.Start(psi);
