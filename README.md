@@ -48,6 +48,11 @@ The helper plays with a **rollout-improved "search" policy** that is floor-guard
 - `affects_gameplay: false` — the simulation is a disposable forecast; it does not auto-play or modify your run.
 - The band reflects play roughly as strong as the built-in AI, sampled over the act's encounters — treat it as guidance, not a guarantee.
 
+## Compatibility
+Built and tested on **Slay the Spire 2 — public (default) branch, Steam build `23478716` (2026-06-02)** (sts2.dll 0.1.0), Windows x64.
+
+Slay the Spire 2 is in Early Access and updates often. The mod and its helper are bound to the game's internal API, so a game update — and the **beta** branch, which runs ahead of stable — can break it until the mod is updated. If the band stops appearing after a game patch, check for a mod update.
+
 ## Credits & License
 - Author: **inggom**
 - Backed by the `Sts2CombatCore` headless combat engine.
