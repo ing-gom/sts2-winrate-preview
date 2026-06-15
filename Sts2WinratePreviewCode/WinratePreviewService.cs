@@ -34,14 +34,18 @@ public sealed class WinratePreviewService
 
     // Monster/Elite bands AGGREGATE over the whole act pool (~10 monsters, ~8
     // elites), so 1 trial per encounter already yields plenty of samples — no
-    // need to pay 3× per encounter. The Boss is a single encounter, so it gets
-    // its own (higher) trial count for a stable estimate.
+    // need to pay 3× per encounter. The Boss is a single encounter (no aggregation
+    // cushion), so 1 trial would make its band binary (win=100% / loss=0%) and a
+    // single lucky/unlucky opening draw could flip it. 2 trials gives a 3-level
+    // band (0/50/100%) and hedges the single-draw flip, while being 2× faster than
+    // the old 4 — the Boss is one of the slowest queries, so this directly speeds
+    // the whole pool refresh. Bump back up via STS2_WINRATE_BOSS_TRIALS if desired.
     // Mean aggregates over the whole pool, so 1 trial per encounter already gives
     // a meaningful average (sample size = number of distinct encounters). Worst /
     // Median modes want more per-encounter resolution — raise STS2_WINRATE_TRIALS
     // (e.g. 3) if switching to those.
     public int PoolTrials { get; set; } = EnvInt("STS2_WINRATE_TRIALS", 1);
-    public int BossTrials { get; set; } = EnvInt("STS2_WINRATE_BOSS_TRIALS", 4);
+    public int BossTrials { get; set; } = EnvInt("STS2_WINRATE_BOSS_TRIALS", 2);
     public AggMode Aggregation { get; set; } = EnvAgg("STS2_WINRATE_AGG", AggMode.Mean);
     public double SafeThreshold { get; set; } = EnvDouble("STS2_WINRATE_SAFE", 0.75);
     public double RiskyThreshold { get; set; } = EnvDouble("STS2_WINRATE_RISKY", 0.45);
