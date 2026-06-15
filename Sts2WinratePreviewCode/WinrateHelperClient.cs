@@ -33,7 +33,32 @@ public sealed class WinrateHelperClient : IDisposable
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
     };
 
-    public int PoolSize { get; } = EnvInt("STS2_WINRATE_HELPERS", 3, min: 1, max: 8);
+    public int PoolSize { get; } = EnvInt("STS2_WINRATE_HELPERS", DefaultHelpers(), min: 1, max: 32);
+
+    /// Default helper count, auto-scaled to the machine. Each helper is a single-
+    /// threaded headless engine (~110 MB) that's idle except during the brief
+    /// map-open band refresh, so the binding resource is CPU CORES, not RAM —
+    /// scale to ~one helper per physical core (ProcessorCount/2 on SMT CPUs),
+    /// leaving the SMT siblings for the game + OS. RAM is only a SAFETY cap for
+    /// low-memory machines (keep the helpers' footprint under ~1/4 of physical
+    /// RAM). Bigger machine (more cores AND RAM) -> more parallel helpers ->
+    /// faster pool refresh. STS2_WINRATE_HELPERS overrides (1..32).
+    private static int DefaultHelpers()
+    {
+        int byCores = Math.Max(2, Environment.ProcessorCount / 2);
+        int byRam = byCores;
+        try
+        {
+            var mem = Godot.OS.GetMemoryInfo();
+            if (mem.ContainsKey("physical"))
+            {
+                long bytes = mem["physical"].AsInt64();
+                if (bytes > 0) byRam = (int)(bytes / 4 / (110L * 1024 * 1024));
+            }
+        }
+        catch { /* OS info unavailable — fall back to the core-based count */ }
+        return Math.Clamp(Math.Min(byCores, Math.Max(2, byRam)), 2, 16);
+    }
 
     /// Per-query wall-clock ceiling. A boss with many trials can legitimately take
     /// a few seconds; beyond this we treat the helper as hung and recycle it.
