@@ -175,25 +175,11 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         var bands = WinratePreviewService.Instance.Bands;
         Visible = bands.Count > 0 && !_suppressed;
 
-        var tip = new System.Text.StringBuilder();
         foreach (var b in bands)
-        {
             _rows.AddChild(BuildRow(b));
-            if (!b.Pending && b.Error == null && b.DisplayPct >= 0)
-            {
-                // Win rate headline + combat-quality (win × remaining-HP) 병기.
-                tip.Append(Strings.Get("tip_quality", KindLabel(b.Kind), b.DisplayPct,
-                    b.QualPct >= 0 ? b.QualPct : 0));
-                if (b.WorstEncounter != null && b.Total > 1)
-                    tip.Append(Strings.Get("tip_hardest", b.WorstEncounter));
-                // The rate is over simulatable encounters only — if some failed,
-                // say so, since that can bias the aggregate (excluded ≠ 0%).
-                if (b.Failed > 0)
-                    tip.Append(Strings.Get("tip_failed", b.Failed, b.Total));
-                tip.Append('\n');
-            }
-        }
-        TooltipText = tip.ToString().TrimEnd();
+        // Hover tooltip = a static legend explaining the two metrics (band = win rate,
+        // 품질/Q = remaining HP% on a win). Per-encounter detail is intentionally omitted.
+        TooltipText = Strings.Get("tip_explain");
     }
 
     private static string KindLabel(string kind) => kind switch
