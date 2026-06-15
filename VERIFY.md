@@ -23,11 +23,19 @@ headless helper process.
    and per-query helper boot lines. No `helper not found` / `timeout` errors.
 4. Sanity: the band should track intuition — easy fights green (안전), bosses red (위험).
 
-## Policy toggle (planner default / hybrid opt-in)
-- Default (no env): fast hand-tuned **planner** (~1–3 s/query) — the real-time default.
-- `STS2_WINRATE_DECISION=clonehybrid`: the disagreement-arbitration **hybrid** — more
-  accurate (+~12 pp validated), ~2.5× slower. Set the env var before launching the game.
-  Verify the helper replies carry `"decision":"clonehybrid"` in the log.
+## Policy toggle (search default / planner fallback)
+- Default (no env): **search** — the rollout-improved planner with the per-seed planner
+  FLOOR. Plays closer to optimal than the hand-tuned planner and can never score below it
+  (the floor runs the planner too and takes the better per seed). ~2× the planner's wall-
+  clock, so a full pool refresh is ~13 s vs ~6 s, but more accurate (esp. marginal fights
+  and bosses). Verify the helper replies carry `"decision":"search"` (and a `"floored"`
+  count) in the log.
+- `STS2_WINRATE_DECISION=plannern`: fall back to the fast hand-tuned **planner**
+  (~1–3 s/query) if you prefer speed over accuracy.
+- `STS2_WINRATE_DECISION=clonehybrid`: the disagreement-arbitration hybrid (OOD-fragile on
+  arbitrary real decks — not recommended for the live overlay; needs `runs/clone_{Char}.onnx`).
+- `STS2_WINRATE_QUERY_TIMEOUT_MS` (default 60000): per-query ceiling before the helper is
+  recycled (raised from 30 s to give search headroom on long bosses).
 
 ## Pool size / timeouts
 - `STS2_WINRATE_HELPERS` (default 3): parallel helper processes (≈ K× throughput, K× RAM).

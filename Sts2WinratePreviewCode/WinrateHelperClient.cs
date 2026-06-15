@@ -37,7 +37,12 @@ public sealed class WinrateHelperClient : IDisposable
 
     /// Per-query wall-clock ceiling. A boss with many trials can legitimately take
     /// a few seconds; beyond this we treat the helper as hung and recycle it.
-    public int QueryTimeoutMs { get; set; } = 30_000;
+    /// 60s gives the (slower, floor-guarded) search policy headroom on long bosses
+    /// so the boss band doesn't error out; the planner is far faster and unaffected.
+    /// (Mid-play card-selection hangs that used to need a tight ceiling are fixed.)
+    public int QueryTimeoutMs { get; set; } =
+        int.TryParse(Environment.GetEnvironmentVariable("STS2_WINRATE_QUERY_TIMEOUT_MS"), out var t) && t > 0
+            ? t : 60_000;
 
     private readonly List<Helper> _helpers = new();
     private BlockingCollection<Helper>? _free;   // available (idle) helpers
@@ -64,18 +69,20 @@ public sealed class WinrateHelperClient : IDisposable
         public int startMaxHp { get; set; }   // 0 = character default
 
         /// Policy the helper server uses to drive each combat.
-        /// null/empty => "plannern" (fast hand-tuned planner, the overlay default).
-        /// "clonehybrid" => disagreement-arbitration hybrid (more accurate, much
-        /// slower — opt-in via STS2_WINRATE_DECISION=clonehybrid).
+        /// Default => "search" (rollout-improved planner with the per-seed planner
+        /// FLOOR — plays closer to optimal than the hand-tuned planner and can never
+        /// score below it; ~2x the planner's wall-clock, so a full pool refresh runs
+        /// ~13s instead of ~6s but is more accurate). Override via
+        /// STS2_WINRATE_DECISION: "plannern" (fast planner), "clonehybrid" (hybrid).
         public string? decision { get; set; } = DefaultDecision();
     }
 
-    /// Reads the policy toggle once. Empty/unset keeps the fast planner so the
-    /// real-time overlay stays within its ~0.5s/query budget.
+    /// Reads the policy toggle once. Default is "search" (floor-guarded, accurate);
+    /// set STS2_WINRATE_DECISION=plannern to fall back to the fast planner.
     private static string? DefaultDecision()
     {
         var v = Environment.GetEnvironmentVariable("STS2_WINRATE_DECISION");
-        return string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+        return string.IsNullOrWhiteSpace(v) ? "search" : v.Trim();
     }
 
     public sealed class WinrateResult
