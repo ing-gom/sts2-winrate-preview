@@ -38,7 +38,10 @@ headless helper process.
   recycled (raised from 30 s to give search headroom on long bosses).
 
 ## Pool size / timeouts
-- `STS2_WINRATE_HELPERS` (default 3): parallel helper processes (≈ K× throughput, K× RAM).
+- `STS2_WINRATE_HELPERS` (default: auto = ~physical cores, RAM-capped, 2..16): parallel
+  helper processes (≈ K× throughput; each ~110 MB, single-threaded, idle except during the
+  map-open refresh — so cores, not RAM, are the limit). Bigger machine → more helpers → faster
+  pool refresh. Override 1..32.
 - A query that exceeds 30 s is treated as a hung helper and recycled.
 
 ## Troubleshooting
