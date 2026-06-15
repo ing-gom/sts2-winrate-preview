@@ -271,7 +271,19 @@ public sealed class WinrateHelperClient : IDisposable
         {
             _stdin!.WriteLine(requestLine);
             _stdin.Flush();
-            return _stdout!.ReadLine();
+            // The helper's stdout should carry only the JSON response line, but a stray
+            // diagnostic print (e.g. a spawn trace during a summon-heavy encounter) could
+            // land on stdout and otherwise be mis-read as the response. Skip any non-JSON
+            // line until the response object (the per-query timeout in Query() bounds this).
+            // The response is always a JSON OBJECT ("{...}"); diagnostic noise like
+            // "[diag] ..." starts with "[", so match "{" exactly to skip it.
+            string? l;
+            while ((l = _stdout!.ReadLine()) != null)
+            {
+                var trimmed = l.TrimStart();
+                if (trimmed.StartsWith("{")) return trimmed;
+            }
+            return null;
         }
 
         private bool EnsureStarted(string? exe, out string? error)
