@@ -69,6 +69,9 @@ The estimate isn't a heuristic — it [b]simulates the real STS2 combat engine[/
 [*]Source / issues: [url=https://github.com/ing-gom/sts2-winrate-preview]github.com/ing-gom/sts2-winrate-preview[/url]
 [/list]
 
+[size=5][b]Compatibility[/b][/size]
+Built and tested on [b]Slay the Spire 2 — public (default) branch, Steam build 23478716 (2026-06-02)[/b] (sts2.dll 0.1.0), Windows x64. STS2 is in Early Access; a game update — and the [b]beta[/b] branch, which runs ahead of stable — can break the mod until it is updated. If the band stops appearing after a patch, check for a mod update.
+
 Author: [b]inggom[/b]
 
 [line]
@@ -122,6 +125,9 @@ Author: [b]inggom[/b]
 [*][b]affects_gameplay: false[/b] — 시뮬은 일회용 예측이며, 런을 자동 플레이하거나 수정하지 않습니다.
 [*]소스 / 이슈: [url=https://github.com/ing-gom/sts2-winrate-preview]github.com/ing-gom/sts2-winrate-preview[/url]
 [/list]
+
+[size=5][b]호환성[/b][/size]
+[b]슬레이 더 스파이어 2 — public(기본) 브랜치, Steam 빌드 23478716 (2026-06-02)[/b] (sts2.dll 0.1.0), Windows x64 기준으로 테스트했습니다. STS2는 얼리 액세스라 게임 업데이트(및 stable보다 앞서 가는 [b]beta[/b] 브랜치)로 깨질 수 있으며, 그때는 모드 업데이트가 필요합니다. 패치 후 밴드가 안 뜨면 모드 업데이트를 확인하세요.
 
 제작자: [b]inggom[/b]
 ```
