@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.Screens.MainMenu;
+using MegaCrit.Sts2.Core.Nodes.Screens.Map;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using Sts2WinratePreview.Localization;
 
 namespace Sts2WinratePreview;
@@ -39,6 +41,20 @@ internal sealed partial class MapPreviewPanel : PanelContainer
     private readonly HashSet<NSubmenu> _submenus = new();
     private bool _suppressed;
     private bool _dragging;
+
+    // Smooth progress fires the service's Changed event up to ~once per trial
+    // (hundreds of times). Coalesce them to one display update per frame (dirty
+    // flag drained in _Process) and update chip text/colour IN PLACE — rebuilding
+    // all rows hundreds of times would churn nodes on the main thread (stutter).
+    private volatile bool _dirty;
+    private readonly List<RowRef> _rowRefs = new();
+
+    private sealed class RowRef
+    {
+        public string Kind = "";
+        public Label Chip = null!;
+        public StyleBoxFlat ChipStyle = null!;
+    }
 
     public override void _Ready()
     {
@@ -98,7 +114,8 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         }
 
         WinratePreviewService.Instance.Changed += OnServiceChanged;
-        RebuildRows();
+        ApplyBands();
+        Visible = WinratePreviewService.Instance.HasBands;
     }
 
     public override void _ExitTree()
@@ -108,8 +125,9 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         if (tree != null) tree.NodeAdded -= OnNodeAdded;
     }
 
-    // Changed fires off the main thread — marshal via deferred call.
-    private void OnServiceChanged() => CallDeferred(nameof(RebuildRows));
+    // Changed fires off the main thread (and very frequently). Just mark dirty;
+    // _Process drains it once per frame on the main thread.
+    private void OnServiceChanged() => _dirty = true;
 
     // ---- drag to reposition (left-drag anywhere on the panel; saved to user://) ----
 
@@ -164,16 +182,46 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         }
     }
 
-    public void RebuildRows()
+    /// Drained from _Process when dirty: update chip text/colour in place when the
+    /// row set is unchanged (the common case during a refresh — only numbers move),
+    /// else do a full rebuild (category set changed).
+    private void ApplyBands()
+    {
+        if (!IsInstanceValid(this)) return;
+        var bands = WinratePreviewService.Instance.Bands;
+        if (RowsMatch(bands)) UpdateRowsInPlace(bands);
+        else RebuildRows(bands);
+    }
+
+    private bool RowsMatch(IReadOnlyList<WinratePreviewService.TargetBand> bands)
+    {
+        if (bands.Count != _rowRefs.Count) return false;
+        for (int i = 0; i < bands.Count; i++)
+            if (bands[i].Kind != _rowRefs[i].Kind) return false;
+        return true;
+    }
+
+    // Cheap path: no node alloc/free — just set the existing chip's text + colour.
+    private void UpdateRowsInPlace(IReadOnlyList<WinratePreviewService.TargetBand> bands)
+    {
+        _header.Text = Strings.Get("header");
+        for (int i = 0; i < bands.Count; i++)
+        {
+            var (text, color) = BandVisual(bands[i]);
+            var rr = _rowRefs[i];
+            if (rr.Chip.Text != text) rr.Chip.Text = text;
+            if (rr.ChipStyle.BgColor != color) rr.ChipStyle.BgColor = color;
+        }
+    }
+
+    private void RebuildRows(IReadOnlyList<WinratePreviewService.TargetBand> bands)
     {
         if (!IsInstanceValid(this)) return;
         _header.Text = Strings.Get("header");   // refresh in case the locale changed
         // perf-guard: GetChild(i), not GetChildren() (avoids per-call array alloc).
         int n = _rows.GetChildCount();
         for (int i = 0; i < n; i++) _rows.GetChild(i)?.QueueFree();
-
-        var bands = WinratePreviewService.Instance.Bands;
-        Visible = bands.Count > 0 && !_suppressed;
+        _rowRefs.Clear();
 
         foreach (var b in bands)
             _rows.AddChild(BuildRow(b));
@@ -224,15 +272,16 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         hbox.AddChild(kindLabel);
 
         var (text, color) = BandVisual(b);
-        var chip = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore };
-        chip.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        var chipStyle = new StyleBoxFlat
         {
             BgColor = color,
             CornerRadiusTopLeft = 6, CornerRadiusTopRight = 6,
             CornerRadiusBottomLeft = 6, CornerRadiusBottomRight = 6,
             ContentMarginLeft = 10, ContentMarginRight = 10,
             ContentMarginTop = 2, ContentMarginBottom = 2,
-        });
+        };
+        var chip = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore };
+        chip.AddThemeStyleboxOverride("panel", chipStyle);
         var chipLabel = new Label
         {
             Text = text,
@@ -248,18 +297,22 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         chip.AddChild(chipLabel);
         hbox.AddChild(chip);
 
+        // Register for in-place updates (UpdateRowsInPlace sets Chip.Text / ChipStyle.BgColor).
+        _rowRefs.Add(new RowRef { Kind = b.Kind, Chip = chipLabel, ChipStyle = chipStyle });
         return hbox;
     }
 
     private static (string, Color) BandVisual(WinratePreviewService.TargetBand b)
     {
-        // Nothing back yet → show progress (N/M) so the user sees it's working.
-        // No successful result yet → show the count climbing (0/N → …). With the
-        // parallel pool, Done jumps in bursts of PoolSize, but it always advances
-        // monotonically so the user sees progress instead of a frozen "0/N".
+        // Progress is shown in TRIALS, not encounters: with N trials per encounter
+        // the real work is Total×N (e.g. 14 monsters × 10 = 140). Each trial is a
+        // separate query, so DoneTrials climbs ~one at a time (bursts of PoolSize),
+        // giving a smooth 0/140 → 140/140 instead of jumping by N per encounter.
+        int totalTrials = b.TotalTrials > 0 ? b.TotalTrials : b.Total * b.Trials;
+        int doneTrials = b.DoneTrials;
         if (b.Pending)
         {
-            string p = b.Total > 1 ? Strings.Get("calc_progress", b.Done, b.Total) : Strings.Get("calc");
+            string p = totalTrials > 1 ? Strings.Get("calc_progress", doneTrials, totalTrials) : Strings.Get("calc");
             return (p, PendingColor);
         }
         if (b.Error != null) return ("—", PendingColor);
@@ -279,7 +332,7 @@ internal sealed partial class MapPreviewPanel : PanelContainer
         int pct = b.DisplayPct >= 0 ? b.DisplayPct : (int)Math.Round(b.Winrate * 100);
         string text = $"{word} {pct}%";
         if (b.QualPct >= 0) text += $" · {Strings.Get("qual")}{b.QualPct}%";
-        if (b.Done < b.Total) text += $" {b.Done}/{b.Total}";
+        if (doneTrials < totalTrials) text += $" {doneTrials}/{totalTrials}";
         return (text, color);
     }
 
@@ -303,18 +356,34 @@ internal sealed partial class MapPreviewPanel : PanelContainer
 
     public override void _Process(double delta)
     {
-        bool suppress;
-        try { suppress = ShouldSuppress(); }
-        catch { suppress = false; }
-        if (suppress == _suppressed) return;
-        _suppressed = suppress;
-        Visible = !_suppressed && WinratePreviewService.Instance.HasBands;
+        try { _suppressed = ShouldSuppress(); }
+        catch { _suppressed = false; }
+
+        // Drain coalesced Changed events once per frame on the main thread.
+        if (_dirty) { _dirty = false; ApplyBands(); }
+
+        bool show = !_suppressed && WinratePreviewService.Instance.HasBands;
+        if (Visible != show) Visible = show;
     }
 
     private bool ShouldSuppress()
     {
         var modal = NModalContainer.Instance;
         if (modal != null && modal.OpenModal != null) return true;
+
+        // The panel is a child of NMapScreen, so it stays alive (and drawn) even
+        // when another screen is layered on top without closing the map — the deck
+        // / relic / potion views open through the *capstone* container (not a
+        // modal or submenu), so the polls below never saw them. ActiveScreenContext
+        // .GetCurrentScreen() resolves the capstone container, the submenu/timeline
+        // stack, event screens, etc., so "map is not the current screen context"
+        // is a single, general signal that something is drawn over the map.
+        if (GetParent() is NMapScreen map)
+        {
+            var asc = ActiveScreenContext.Instance;
+            if (asc != null && !asc.IsCurrent(map)) return true;
+        }
+
         _submenus.RemoveWhere(s => !IsInstanceValid(s));
         foreach (var sm in _submenus)
             if (sm.IsVisibleInTree()) return true;

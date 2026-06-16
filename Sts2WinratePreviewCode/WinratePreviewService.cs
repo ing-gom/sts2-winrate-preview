@@ -32,21 +32,60 @@ public sealed class WinratePreviewService
     /// UI handlers MUST marshal to the Godot main thread (CallDeferred).
     public event Action? Changed;
 
-    // Monster/Elite bands AGGREGATE over the whole act pool (~10 monsters, ~8
-    // elites), so 1 trial per encounter already yields plenty of samples — no
-    // need to pay 3× per encounter. The Boss is a single encounter (no aggregation
-    // cushion), so 1 trial would make its band binary (win=100% / loss=0%) and a
-    // single lucky/unlucky opening draw could flip it. 2 trials gives a 3-level
-    // band (0/50/100%) and hedges the single-draw flip, while being 2× faster than
-    // the old 4 — the Boss is one of the slowest queries, so this directly speeds
-    // the whole pool refresh. Bump back up via STS2_WINRATE_BOSS_TRIALS if desired.
-    // Mean aggregates over the whole pool, so 1 trial per encounter already gives
-    // a meaningful average (sample size = number of distinct encounters). Worst /
-    // Median modes want more per-encounter resolution — raise STS2_WINRATE_TRIALS
-    // (e.g. 3) if switching to those.
-    public int PoolTrials { get; set; } = EnvInt("STS2_WINRATE_TRIALS", 1);
-    public int BossTrials { get; set; } = EnvInt("STS2_WINRATE_BOSS_TRIALS", 2);
+    // Trials per encounter, split by category so each can be tuned independently
+    // (in-game settings UI, 1..10). Monster/Elite bands AGGREGATE over the whole
+    // act pool (~10 monsters, ~8 elites), so 1 trial per encounter already yields
+    // plenty of samples (the pool size IS the sample size) — no need to pay extra
+    // per encounter. The Boss is a SINGLE encounter (no aggregation cushion), so
+    // 1 trial makes its band binary (win=100% / loss=0%) and a single lucky/unlucky
+    // opening draw can flip it; more boss trials buy a smoother, more trustworthy
+    // boss number at the cost of speed (the boss is one of the slowest queries).
+    // Env vars seed the defaults; the in-game mod options (ModConfig) override and
+    // persist them. Set via SetTrials / SetTrialsQuiet so values stay clamped.
+    public const int MinTrials = 1;
+    public const int MaxTrials = 10;
+    public int MonsterTrials { get; private set; } = Math.Clamp(EnvInt("STS2_WINRATE_TRIALS", 1), MinTrials, MaxTrials);
+    public int EliteTrials { get; private set; } = Math.Clamp(EnvInt("STS2_WINRATE_TRIALS", 1), MinTrials, MaxTrials);
+    public int BossTrials { get; private set; } = Math.Clamp(EnvInt("STS2_WINRATE_BOSS_TRIALS", 2), MinTrials, MaxTrials);
     public AggMode Aggregation { get; set; } = EnvAgg("STS2_WINRATE_AGG", AggMode.Mean);
+
+    /// Current trial count for a category ("Monster" / "Elite" / "Boss").
+    public int GetTrials(string kind) => kind switch
+    {
+        "Boss" => BossTrials,
+        "Elite" => EliteTrials,
+        _ => MonsterTrials,
+    };
+
+    /// Set a category's trial count (clamped) WITHOUT recomputing — for applying
+    /// saved/initial values before any run is active.
+    public void SetTrialsQuiet(string kind, int value)
+    {
+        value = Math.Clamp(value, MinTrials, MaxTrials);
+        switch (kind)
+        {
+            case "Boss": BossTrials = value; break;
+            case "Elite": EliteTrials = value; break;
+            default: MonsterTrials = value; break;
+        }
+    }
+
+    /// Set a category's trial count and re-run the preview so the change shows
+    /// immediately (the run fingerprint doesn't include trials, so a plain Refresh
+    /// would be a no-op).
+    public void SetTrials(string kind, int value)
+    {
+        int before = GetTrials(kind);
+        SetTrialsQuiet(kind, value);
+        if (GetTrials(kind) != before) ForceRefresh();
+    }
+
+    /// Invalidate the cached fingerprint and recompute from the current run state.
+    public void ForceRefresh()
+    {
+        lock (_lock) { _displayedFp = ""; _pendingFp = null; }
+        Refresh();
+    }
     public double SafeThreshold { get; set; } = EnvDouble("STS2_WINRATE_SAFE", 0.75);
     public double RiskyThreshold { get; set; } = EnvDouble("STS2_WINRATE_RISKY", 0.45);
 
@@ -58,9 +97,12 @@ public sealed class WinratePreviewService
         public string Kind = "";       // Monster | Elite | Boss
         public Band Band = Band.Unknown;
         public double Winrate = -1;    // representative win rate per Aggregation mode; -1 until known
-        public int N;                  // total trials aggregated so far
-        public int Done;               // encounters finished
+        public int N;                  // successful trials aggregated so far
+        public int Done;               // encounters fully finished
         public int Total;              // encounters in this category
+        public int Trials = 1;         // trials run per encounter for this category
+        public int DoneTrials;         // single-trial queries completed (smooth progress numerator)
+        public int TotalTrials;        // = Total × Trials (smooth progress denominator)
         public bool Pending = true;    // true until the FIRST result lands
         public string? Error;          // set when every query in the category failed
         public string? WorstEncounter; // hardest encounter driving the band (Worst mode)
@@ -133,6 +175,20 @@ public sealed class WinratePreviewService
         if (changed) RaiseChanged();
     }
 
+    /// Per-encounter accumulator across its single-trial queries (smooth progress).
+    private sealed class EncAcc
+    {
+        public string Kind = "";
+        public int PlannedTrials;
+        public int DoneTrials;   // single-trial queries completed (incl. failures)
+        public int Wins;         // winning trials
+        public int N;            // successful trials (sum of r.n)
+        public double WinHpSum;  // sum of remaining-HP% over winning trials
+        public string? Error;    // first error seen
+        public List<string>? Unknown;
+        public bool Logged;
+    }
+
     private void Worker()
     {
         while (true)
@@ -147,21 +203,30 @@ public sealed class WinratePreviewService
                 _pendingSnap = null;   // claim this job
             }
 
-            // results[kind] = per-encounter outcomes accumulated so far. Mutated
-            // from multiple pool threads → guarded by _lock on every write.
-            var results = new Dictionary<string, List<WinrateHelperClient.WinrateResult>>(StringComparer.Ordinal);
+            // One accumulator per encounter, and a flat work-list of single-trial
+            // queries (encounter × trialIdx). Splitting trials into separate 1-trial
+            // queries — each with a DISTINCT seed so they actually vary — lets the
+            // progress advance one trial at a time instead of a whole encounter at
+            // once. acc is mutated from pool threads → guarded by _lock.
+            var acc = new Dictionary<string, EncAcc>(StringComparer.Ordinal);
+            var work = new List<(RunStateReader.EncounterTarget target, int trialIdx)>();
+            foreach (var t in snap.Targets)
+            {
+                int trials = GetTrials(t.Kind);
+                acc[t.Encounter] = new EncAcc { Kind = t.Kind, PlannedTrials = trials };
+                for (int i = 0; i < trials; i++) work.Add((t, i));
+            }
 
-            // Dispatch every encounter query across the helper pool concurrently.
-            // Degree = pool size; each thread checks out one helper process.
             var opts = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, WinrateHelperClient.Instance.PoolSize) };
             try
             {
-                Parallel.ForEach(snap.Targets, opts, (target, loop) =>
+                Parallel.ForEach(work, opts, (item, loop) =>
                 {
                     // A newer run state arrived — stop spawning more work.
                     lock (_lock) { if (_pendingSnap != null) { loop.Stop(); return; } }
                     if (loop.ShouldExitCurrentIteration) return;
 
+                    var (target, trialIdx) = item;
                     var req = new WinrateHelperClient.WinrateRequest
                     {
                         character = snap.Character,
@@ -169,30 +234,42 @@ public sealed class WinratePreviewService
                         relics = snap.Relics,
                         potions = snap.Potions,
                         encounter = target.Encounter,
-                        trials = target.Kind == "Boss" ? BossTrials : PoolTrials,
-                        seed = $"preview-a{snap.ActIndex}",
+                        trials = 1,
+                        // Per-trial seed: same base → same result, so vary it by
+                        // encounter + trial index. Deterministic, so re-opening the
+                        // map reproduces the exact same bands (fingerprint cache).
+                        seed = $"preview-a{snap.ActIndex}-{target.Encounter}-{trialIdx}",
                         startHp = snap.CurrentHp,    // simulate from the player's live HP
                         startMaxHp = snap.MaxHp,
                     };
                     var r = WinrateHelperClient.Instance.Query(req);
 
-                    // Per-encounter diagnostics: log EVERY result so an off-looking
-                    // aggregate (e.g. "elite easy" on a starter deck) can be traced
-                    // to which encounter drove it and whether others were dropped.
-                    if (!r.Ok)
-                        MainFile.Logger.Warn($"[{MainFile.ModId}] {target.Kind} {target.Encounter}: FAILED — {r.error ?? "no result"}");
-                    else
-                        MainFile.Logger.Info($"[{MainFile.ModId}] {target.Kind} {target.Encounter}: {r.winrate * 100:0}% ({r.wins}/{r.n})"
-                            + (r.unknownCards is { Count: > 0 } ? $" [dropped: {string.Join(",", r.unknownCards)}]" : ""));
-
-                    // Accumulate + publish a progressive aggregate under the lock.
                     lock (_lock)
                     {
-                        if (!results.TryGetValue(target.Kind, out var list))
-                            results[target.Kind] = list = new List<WinrateHelperClient.WinrateResult>();
-                        list.Add(r);
-                        if (_pendingSnap == null && _pendingFp == fp)
-                            _bands = BuildAggregates(snap, results);
+                        if (_pendingSnap != null || _pendingFp != fp) return;  // stale job
+                        var a = acc[target.Encounter];
+                        a.DoneTrials++;
+                        if (r.Ok)
+                        {
+                            a.N += r.n;
+                            a.Wins += r.wins;
+                            if (r.wins > 0 && r.winHpPct >= 0) a.WinHpSum += r.winHpPct;
+                            if (r.unknownCards is { Count: > 0 }) a.Unknown ??= r.unknownCards;
+                        }
+                        else { a.Error ??= r.error; }
+
+                        // One diagnostic line per encounter, when its last trial lands.
+                        if (a.DoneTrials >= a.PlannedTrials && !a.Logged)
+                        {
+                            a.Logged = true;
+                            if (a.N == 0)
+                                MainFile.Logger.Warn($"[{MainFile.ModId}] {a.Kind} {target.Encounter}: FAILED — {a.Error ?? "no result"}");
+                            else
+                                MainFile.Logger.Info($"[{MainFile.ModId}] {a.Kind} {target.Encounter}: {(double)a.Wins / a.N * 100:0}% ({a.Wins}/{a.N})"
+                                    + (a.Unknown is { Count: > 0 } ? $" [dropped: {string.Join(",", a.Unknown)}]" : ""));
+                        }
+
+                        _bands = BuildAggregates(snap, acc);
                     }
                     RaiseChanged();
                 });
@@ -217,38 +294,60 @@ public sealed class WinratePreviewService
     }
 
     /// One aggregate TargetBand per category present in the snapshot, in the
-    /// snapshot's category order (Monster → Elite → Boss). `results` may be null
-    /// (initial publish) or partial (progressive refinement).
+    /// snapshot's category order (Monster → Elite → Boss). `acc` may be null
+    /// (initial publish, everything pending) or partial (progressive refinement as
+    /// single-trial queries land). Per-encounter win rate = wins/N accumulated so
+    /// far; the category band collapses those per the Aggregation mode.
     private List<TargetBand> BuildAggregates(
         RunStateReader.RunSnapshot snap,
-        Dictionary<string, List<WinrateHelperClient.WinrateResult>>? results)
+        Dictionary<string, EncAcc>? acc)
     {
         var bands = new List<TargetBand>();
         foreach (var kindGroup in snap.Targets.GroupBy(t => t.Kind))
         {
-            var tb = new TargetBand { Kind = kindGroup.Key, Total = kindGroup.Count() };
-            if (results != null && results.TryGetValue(kindGroup.Key, out var list) && list.Count > 0)
+            int trials = GetTrials(kindGroup.Key);
+            int totalEnc = kindGroup.Count();
+            var tb = new TargetBand
             {
-                tb.Done = list.Count;
-                // Per-encounter WIN RATE (only completed ones) — the band/headline.
+                Kind = kindGroup.Key,
+                Total = totalEnc,
+                Trials = trials,
+                TotalTrials = totalEnc * trials,
+            };
+
+            if (acc != null)
+            {
                 // Remaining-HP% is tracked SEPARATELY as a secondary "cost" number,
-                // NOT multiplied in (win × HP undervalues safe-but-costly fights:
-                // 95% win @ 40% HP is still a 95% win, not a 38% danger).
+                // NOT multiplied into the win rate (a 95% win @ 40% HP is still a
+                // 95% win, not a 38% danger).
                 var rates = new List<(double wr, string enc)>();
-                int n = 0, errors = 0;
+                int doneTrials = 0, doneEnc = 0, errors = 0, n = 0;
                 double qualSum = 0;
                 string? firstError = null;
-                foreach (var r in list)
+                foreach (var t in kindGroup)
                 {
-                    if (r.Ok)
+                    if (!acc.TryGetValue(t.Encounter, out var a)) continue;
+                    doneTrials += a.DoneTrials;
+                    bool encDone = a.DoneTrials >= a.PlannedTrials;
+                    if (encDone) doneEnc++;
+                    if (a.N > 0)
                     {
-                        rates.Add((r.winrate, r.encounter)); n += r.n;
+                        double wr = (double)a.Wins / a.N;
+                        rates.Add((wr, t.Encounter));
+                        n += a.N;
                         // Combat quality per encounter = win rate × remaining-HP fraction
-                        // on a win (loss / no-HP-data → 0). Captures "win AND stay healthy".
-                        qualSum += r.winHpPct >= 0 ? r.winrate * (r.winHpPct / 100.0) : 0.0;
+                        // on a win (all-loss / no-HP-data → 0). "win AND stay healthy".
+                        double avgHpFrac = a.Wins > 0 ? (a.WinHpSum / a.Wins) / 100.0 : 0.0;
+                        qualSum += wr * avgHpFrac;
                     }
-                    else { errors++; firstError ??= r.error; }
+                    else if (encDone)   // fully ran, every trial failed in the engine
+                    {
+                        errors++;
+                        firstError ??= a.Error;
+                    }
                 }
+                tb.DoneTrials = doneTrials;
+                tb.Done = doneEnc;
                 tb.Failed = errors;
                 if (rates.Count > 0)
                 {
@@ -259,13 +358,12 @@ public sealed class WinratePreviewService
                     tb.WorstEncounter = worstEnc;
                     tb.DisplayPct = (int)Math.Round(wr * 100);   // main = win rate (band)
                     tb.Band = ToBand(wr);                         // risk band by win rate
-                    // 병기 — combat quality = mean(win rate × remaining-HP%).
                     tb.QualPct = (int)Math.Round(100.0 * qualSum / rates.Count);
                 }
-                else if (errors == tb.Total)
+                else if (errors == totalEnc && totalEnc > 0)
                 {
-                    // Every encounter in this category failed in the engine —
-                    // keep the real reason for the log / tooltip, show "-" in UI.
+                    // Every encounter in this category failed — keep the real reason
+                    // for the log / tooltip, show "-" in UI.
                     tb.Pending = false;
                     tb.Error = firstError ?? "error";
                 }
