@@ -20,7 +20,7 @@
 - 16개 언어. 패널에 마우스를 올리면 두 수치에 대한 간단한 설명이 뜹니다.
 
 ## 작동 방식
-1. 번들된 헤드리스 헬퍼(`Sts2CombatCore`)가 **실제 게임 전투 엔진**을 별도 프로세스로 구동합니다.
+1. 헤드리스 헬퍼(`Sts2CombatCore`, 설치 3단계에서 별도 다운로드)가 **실제 게임 전투 엔진**을 별도 프로세스로 구동합니다.
 2. 맵을 열면 모드가 현재 덱·유물·포션·HP를 **헬퍼 프로세스 풀**에 보내, 다가올 각 전투를 승/패까지 시뮬레이션합니다.
 3. 전투당 약 1초 내로 밴드가 뜹니다. 사양이 좋을수록 헬퍼가 많아져 더 빠릅니다.
 
@@ -28,13 +28,19 @@
 
 ## 설치
 1. STS2 모드 로더가 설치돼 있어야 합니다.
-2. 릴리즈 zip을 게임 `mods/` 폴더에 풀어 아래 구조가 되게 합니다:
+2. 모드 zip(Nexus 페이지에서 받은 것)을 게임 `mods/` 폴더에 풉니다.
+3. **헬퍼를 받으세요** (~42 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). 본인 게임 브랜치에 맞는 것을 받아 **같은 `mods/` 폴더에** 풉니다:
+   - **스테이블**(기본 브랜치): [Sts2WinratePreview-helper-v0.1.3-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip)
+   - **베타** 브랜치: [Sts2WinratePreview-helper-v0.1.3-beta.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip)
+
+   <sub>SHA-256 — 스테이블: `3401ad3752d8b850a980e7b5bd4bde6cf9e6e1e5cc7254b92446627e1c1452eb` · 베타: `487066cf60d8f05cb64d89f51af65b34497521f8146b219a593e164c86d316c8`</sub>
+4. 최종 구조:
    ```
    <게임>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
    <게임>/mods/Sts2WinratePreview/Sts2WinratePreview.json
    <게임>/mods/Sts2WinratePreview/helper/Sts2CombatCore.exe   (+ 런타임 파일)
    ```
-3. 게임을 실행하고 런을 시작하면 맵 화면에 밴드가 나타납니다.
+5. 게임을 실행하고 런을 시작하면 맵 화면에 밴드가 나타납니다.
 
 ## 설정 (선택 — 환경 변수)
 | 변수 | 기본값 | 효과 |
@@ -44,7 +50,7 @@
 | `STS2_WINRATE_QUERY_TIMEOUT_MS` | `60000` | 전투당 타임아웃(초과 시 헬퍼 재활용). |
 
 ## 참고
-- 번들된 헬퍼는 자체 포함(self-contained, Windows x64)이라 별도 .NET 설치가 필요 없습니다.
+- 헬퍼는 자체 포함(self-contained, Windows x64)이라 별도 .NET 설치가 필요 없습니다.
 - 헬퍼는 별도 프로세스라, 첫 맵 진입 시 한 번 워밍업합니다.
 - `affects_gameplay: false` — 시뮬은 일회용 예측이며, 런을 자동 플레이하거나 수정하지 않습니다.
 - 밴드는 내장 AI 수준의 플레이를 막 인카운터에 표본추출한 것 — 보장이 아닌 **참고용**으로 보세요.
