@@ -141,8 +141,18 @@ public sealed class WinratePreviewService
 
     /// Read the run state and (re)compute bands if anything changed. Cheap and
     /// idempotent — safe to call every time the map screen becomes visible.
+    /// True while a fight is active. The map-preview sim is gated off during
+    /// combat: its rollouts would compete with the live fight for CPU, and the
+    /// "upcoming encounter" bands are irrelevant mid-fight anyway.
+    internal static bool IsInCombat()
+    {
+        try { return MegaCrit.Sts2.Core.Combat.CombatManager.Instance?.IsInProgress == true; }
+        catch { return false; }
+    }
+
     public void Refresh()
     {
+        if (IsInCombat()) return;   // don't preview upcoming encounters during a fight
         if (!RunStateReader.TryRead(out var snap)) { Clear(); return; }
 
         bool start = false;
@@ -224,6 +234,9 @@ public sealed class WinratePreviewService
                 {
                     // A newer run state arrived — stop spawning more work.
                     lock (_lock) { if (_pendingSnap != null) { loop.Stop(); return; } }
+                    // Combat started mid-refresh — abandon the preview so we don't
+                    // burn CPU on upcoming-encounter rollouts during the live fight.
+                    if (IsInCombat()) { loop.Stop(); return; }
                     if (loop.ShouldExitCurrentIteration) return;
 
                     var (target, trialIdx) = item;
