@@ -15,7 +15,8 @@ The estimate isn't a heuristic — it **simulates the real STS2 combat engine** 
 - **Win-rate %** + **combat-quality %** (HP you'd keep on a win) side by side.
 - **Real combat-engine simulation** via a pooled headless helper running a rollout-improved policy — not a static formula.
 - Aggregates over the whole act's encounter pool, so the band stays stable as you move through the act (only your deck / HP change it).
-- Draggable, dismissible panel; auto-hides during pause / settings popups.
+- **Optional [ModConfig](https://www.nexusmods.com/slaythespire2/mods/27) settings** — adjust the simulation trials per category (Monster / Elite / Boss, 1–10) in-game; more Boss trials = a steadier boss band. Without ModConfig the defaults apply.
+- Draggable, dismissible panel; auto-hides whenever another screen (your deck / relic / potion view, pause, settings) is layered over the map.
 - 16 languages. Hover the panel for a short legend of the two numbers.
 
 ## How it works
