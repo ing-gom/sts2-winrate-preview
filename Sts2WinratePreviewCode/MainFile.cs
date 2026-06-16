@@ -25,6 +25,12 @@ public partial class MainFile : Node
             // Make sure the headless helper child is torn down with the game.
             AppDomain.CurrentDomain.ProcessExit += (_, _) => WinrateHelperClient.Instance.Dispose();
 
+            // Register the in-game mod options (Monster/Elite/Boss trials, 1–10) via
+            // ModConfig. Deferred a frame so ModConfig's own Initialize runs first;
+            // a no-op (defaults apply) if ModConfig isn't installed.
+            if (Engine.GetMainLoop() is SceneTree tree)
+                tree.CreateTimer(0.0).Timeout += ModConfigBridge.TryRegister;
+
             // Opt-in in-game smoke test: proves the live mod <-> helper-process
             // roundtrip end-to-end. Run off the main thread so the game never stalls.
             if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("STS2_WINRATE_SELFTEST")))
