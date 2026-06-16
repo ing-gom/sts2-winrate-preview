@@ -92,6 +92,21 @@ public sealed class WinrateHelperClient : IDisposable
         public string? seed { get; set; }
         public int startHp { get; set; }      // 0 = full HP
         public int startMaxHp { get; set; }   // 0 = character default
+        // Live-combat preview (decision=search): per-enemy current HP, indexed to
+        // encounter spawn order. null = enemies start full (map-preview path).
+        public List<int>? enemyHps { get; set; }
+        // Powers to seed (id = power class name, amount = stacks). null = leave the
+        // creature's powers alone; a list (even empty) clears-then-applies to match.
+        public List<PowerSpec>? playerPowers { get; set; }
+        public List<List<PowerSpec>>? enemyPowers { get; set; }
+        // EXACT restore ("완전" mode): the player's current hand / discard by card
+        // id, current energy + block, and each enemy's pending intent — so the sim
+        // resumes the real turn and can see a lethal hit landing THIS turn.
+        public List<string>? hand { get; set; }
+        public List<string>? discard { get; set; }
+        public int energy { get; set; } = -1;   // -1 = leave full (no exact restore)
+        public int block { get; set; }
+        public List<MoveSpec>? enemyMoves { get; set; }   // index-matched to enemyHps
 
         /// Policy the helper server uses to drive each combat.
         /// Default => "search" (rollout-improved planner with the per-seed planner
@@ -100,6 +115,19 @@ public sealed class WinrateHelperClient : IDisposable
         /// ~13s instead of ~6s but is more accurate). Override via
         /// STS2_WINRATE_DECISION: "plannern" (fast planner), "clonehybrid" (hybrid).
         public string? decision { get; set; } = DefaultDecision();
+    }
+
+    public sealed class PowerSpec
+    {
+        public string id { get; set; } = "";
+        public int amount { get; set; }
+    }
+
+    public sealed class MoveSpec
+    {
+        public string? currentMoveId { get; set; }
+        public string? nextMoveId { get; set; }
+        public bool performedFirstMove { get; set; }
     }
 
     /// Reads the policy toggle once. Default is "search" (floor-guarded, accurate);
@@ -125,6 +153,11 @@ public sealed class WinrateHelperClient : IDisposable
         public int failedTrials { get; set; }
         public int enemyShavedPct { get; set; }   // avg % of enemy HP removed (win=100%)
         public int winHpPct { get; set; } = -1;    // avg remaining HP% on wins (-1 = no wins)
+        // Recommendation: the search's best opening move from here. recKind = "play"
+        // (recCard = card id, recTarget = enemy index) or "end" (end the turn).
+        public string? recKind { get; set; }
+        public string? recCard { get; set; }
+        public int recTarget { get; set; } = -1;
 
         public bool Ok => string.IsNullOrEmpty(error) && n > 0;
     }

@@ -11,6 +11,11 @@ public partial class MainFile : Node
 {
     public const string ModId = "Sts2WinratePreview";
 
+    /// The in-combat chip is dev-only while it's experimental — enabled only when a
+    /// developer sets STS2_WINRATE_COMBAT_CHIP=1. Normal players never see it.
+    private static bool CombatChipEnabled =>
+        !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("STS2_WINRATE_COMBAT_CHIP"));
+
     public static MegaCrit.Sts2.Core.Logging.Logger Logger { get; }
         = new(ModId, MegaCrit.Sts2.Core.Logging.LogType.Generic);
 
@@ -29,14 +34,26 @@ public partial class MainFile : Node
             // ModConfig. Deferred a frame so ModConfig's own Initialize runs first;
             // a no-op (defaults apply) if ModConfig isn't installed.
             if (Engine.GetMainLoop() is SceneTree tree)
+            {
                 tree.CreateTimer(0.0).Timeout += ModConfigBridge.TryRegister;
+                // In-combat "win from here" overlay (persistent root node, shows only
+                // while a fight is the foreground screen). DEV-ONLY for now — still
+                // experimental, so it's gated behind STS2_WINRATE_COMBAT_CHIP=1 and
+                // stays off for normal players. The shipped feature is the map-node
+                // band preview; this chip is enabled only when a developer opts in.
+                if (CombatChipEnabled)
+                {
+                    tree.CreateTimer(0.0).Timeout += CombatOverlay.Install;
+                    Logger.Info($"[{ModId}] in-combat chip ENABLED (dev mode).");
+                }
+            }
 
             // Opt-in in-game smoke test: proves the live mod <-> helper-process
             // roundtrip end-to-end. Run off the main thread so the game never stalls.
             if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("STS2_WINRATE_SELFTEST")))
                 Task.Run(SelfTest);
 
-            Logger.Info($"[{ModId}] initialized (v0.1.0).");
+            Logger.Info($"[{ModId}] initialized (v0.1.3).");
         }
         catch (Exception ex)
         {
