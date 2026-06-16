@@ -19,6 +19,8 @@ Alternative shorter one-liner:
 ```bbcode
 [center][size=6][b]StS2 Winrate Preview[/b][/size][/center]
 
+[center][color=#e0a020][b]⚠ Requires a separate helper download (~42 MB) from GitHub — see [i]Install[/i] below.[/b][/color][/center]
+
 A [b]Slay the Spire 2 map overlay[/b] that shows a combat-risk band — [b]Safe / Caution / Danger[/b] — with a [b]win-rate %[/b] and [b]combat-quality %[/b] for the upcoming [b]Monster / Elite / current-act Boss[/b], [i]before[/i] you pick a map node.
 
 The estimate isn't a heuristic — it [b]simulates the real STS2 combat engine[/b] in a separate headless helper process, using your [b]current deck, relics, potions and HP[/b]. It is [b]read-only and never touches your game state.[/b]
@@ -82,6 +84,8 @@ Author: [b]inggom[/b]
 [line]
 
 [center][size=6][b]한국어[/b][/size][/center]
+
+[center][color=#e0a020][b]⚠ 별도 헬퍼 다운로드(~42 MB, GitHub)가 필요합니다 — 아래 [i]설치[/i] 참고.[/b][/color][/center]
 
 [b]슬레이 더 스파이어 2 맵 오버레이[/b] — 맵에서 노드를 고르기 [i]전에[/i], 다가올 [b]몬스터 / 엘리트 / 현재 막 보스[/b]에 대한 전투 위험도 밴드([b]안전 / 주의 / 위험[/b])와 [b]승률 %[/b], [b]전투 품질 %[/b]를 띄워 줍니다.
 
