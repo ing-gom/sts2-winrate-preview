@@ -42,13 +42,15 @@ public static class Strings
             ["header"]="Combat risk", ["kind_monster"]="Monster", ["kind_elite"]="Elite", ["kind_boss"]="Boss",
             ["band_easy"]="Safe", ["band_normal"]="Caution", ["band_hard"]="Danger",
             ["calc"]="Calculating…", ["calc_progress"]="Calculating {0}/{1}",
-            ["tip_line"]="{0}: {1}% win", ["tip_hardest"]=" (hardest: {0})", ["tip_failed"]=" ({0}/{1} sim failed)", ["boss_progress"]=" {0} · defeat {1}%", ["tip_boss"]="{0}: {1}% defeated", ["tip_quality"]="{0}: {1}% win · quality {2}%", ["qual"]="Q"},
+            ["tip_line"]="{0}: {1}% win", ["tip_hardest"]=" (hardest: {0})", ["tip_failed"]=" ({0}/{1} sim failed)", ["boss_progress"]=" {0} · defeat {1}%", ["tip_boss"]="{0}: {1}% defeated", ["tip_quality"]="{0}: {1}% win · quality {2}%", ["qual"]="Q",
+            ["recommend"]="▶ {0}", ["end_turn"]="End turn", ["enemy_arrow"]="→ #{0}"},
         ["KOR"] = new() {
             ["tip_explain"]="승률% = 이 전투에서 이길 확률 (높을수록 안전).\n품질% = 이겼을 때 남는 HP (높을수록 손해 적게 이김).",
             ["header"]="예상 전투 위험도", ["kind_monster"]="몬스터", ["kind_elite"]="엘리트", ["kind_boss"]="보스",
             ["band_easy"]="안전", ["band_normal"]="주의", ["band_hard"]="위험",
             ["calc"]="계산 중…", ["calc_progress"]="계산 중 {0}/{1}",
-            ["tip_line"]="{0}: 승률 {1}%", ["tip_hardest"]=" (최난적: {0})", ["tip_failed"]=" ({1}개 중 {0}개 시뮬 실패)", ["boss_progress"]=" {0} · 처치 {1}%", ["tip_boss"]="{0}: 처치 {1}%", ["tip_quality"]="{0}: 승률 {1}% · 전투 품질 {2}%", ["qual"]="품질"},
+            ["tip_line"]="{0}: 승률 {1}%", ["tip_hardest"]=" (최난적: {0})", ["tip_failed"]=" ({1}개 중 {0}개 시뮬 실패)", ["boss_progress"]=" {0} · 처치 {1}%", ["tip_boss"]="{0}: 처치 {1}%", ["tip_quality"]="{0}: 승률 {1}% · 전투 품질 {2}%", ["qual"]="품질",
+            ["recommend"]="▶ {0}", ["end_turn"]="턴 종료", ["enemy_arrow"]="→ 적{0}"},
         ["JPN"] = new() {
             ["tip_explain"]="勝率% = この戦闘に勝つ確率（高いほど安全）。\n品質% = 勝利時に残るHP（高いほど被害が少ない）。",
             ["header"]="戦闘の予想勝率", ["kind_monster"]="モンスター", ["kind_elite"]="エリート", ["kind_boss"]="ボス",
