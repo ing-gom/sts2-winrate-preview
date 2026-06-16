@@ -20,7 +20,7 @@ The estimate isn't a heuristic — it **simulates the real STS2 combat engine** 
 - 16 languages. Hover the panel for a short legend of the two numbers.
 
 ## How it works
-1. A bundled headless helper (`Sts2CombatCore`) runs the **actual game combat engine** out-of-process.
+1. A headless helper (`Sts2CombatCore`, downloaded separately — see Install step 3) runs the **actual game combat engine** out-of-process.
 2. When you open the map, the mod sends your current deck / relics / potions / HP to a **pool of helper processes**, which simulate each upcoming encounter to a win/loss outcome.
 3. The win-rate band appears within roughly a second per fight. Bigger machine → more helpers → faster refresh.
 
@@ -28,13 +28,19 @@ The helper plays with a **rollout-improved "search" policy** that is floor-guard
 
 ## Install
 1. Have an STS2 mod loader set up.
-2. Extract the release zip into your game's `mods/` folder so the layout is:
+2. Extract the mod zip (from the Nexus page) into your game's `mods/` folder.
+3. **Download the helper** (~42 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the **same** `mods/` folder. Pick the build matching your game branch:
+   - **Stable** (default branch): [Sts2WinratePreview-helper-v0.1.3-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip)
+   - **Beta** branch: [Sts2WinratePreview-helper-v0.1.3-beta.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip)
+
+   <sub>SHA-256 — stable: `3401ad3752d8b850a980e7b5bd4bde6cf9e6e1e5cc7254b92446627e1c1452eb` · beta: `487066cf60d8f05cb64d89f51af65b34497521f8146b219a593e164c86d316c8`</sub>
+4. The final layout should be:
    ```
    <game>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
    <game>/mods/Sts2WinratePreview/Sts2WinratePreview.json
    <game>/mods/Sts2WinratePreview/helper/Sts2CombatCore.exe   (+ runtime files)
    ```
-3. Launch the game and start a run — the band appears on the map screen.
+5. Launch the game and start a run — the band appears on the map screen.
 
 ## Configuration (optional — environment variables)
 | Variable | Default | Effect |
@@ -44,7 +50,7 @@ The helper plays with a **rollout-improved "search" policy** that is floor-guard
 | `STS2_WINRATE_QUERY_TIMEOUT_MS` | `60000` | Per-encounter timeout before a stuck helper is recycled. |
 
 ## Notes
-- The bundled helper is self-contained (Windows x64); no separate .NET install is required.
+- The helper is self-contained (Windows x64); no separate .NET install is required.
 - The helper is a separate process; the first map-open spins it up (a brief one-time warm-up).
 - `affects_gameplay: false` — the simulation is a disposable forecast; it does not auto-play or modify your run.
 - The band reflects play roughly as strong as the built-in AI, sampled over the act's encounters — treat it as guidance, not a guarantee.

@@ -40,7 +40,7 @@ The estimate isn't a heuristic — it [b]simulates the real STS2 combat engine[/
 
 [size=5][b]How it works[/b][/size]
 [list=1]
-[*]A bundled headless helper ([i]Sts2CombatCore[/i]) runs the [b]actual game combat engine[/b] out-of-process.
+[*]A headless helper ([i]Sts2CombatCore[/i], downloaded separately — see Install) runs the [b]actual game combat engine[/b] out-of-process.
 [*]When you open the map, the mod sends your current deck / relics / potions / HP to a [b]pool of helper processes[/b], which simulate each upcoming encounter to a win/loss.
 [*]The band appears within ~1s per fight. Bigger machine → more helpers → faster refresh.
 [/list]
@@ -48,13 +48,17 @@ The estimate isn't a heuristic — it [b]simulates the real STS2 combat engine[/
 [size=5][b]Install[/b][/size]
 [list=1]
 [*]Have an STS2 mod loader set up.
-[*]Extract the archive into your game's [b]mods[/b] folder so you have:
+[*]Extract this mod archive into your game's [b]mods[/b] folder.
+[*][b]Download the helper[/b] (~42 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the [b]same[/b] mods folder. Pick the build matching your game branch:
+ [list][*][b]Stable[/b] (default): [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip]Sts2WinratePreview-helper-v0.1.3-stable.zip[/url]
+[*][b]Beta[/b] branch: [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip]Sts2WinratePreview-helper-v0.1.3-beta.zip[/url][/list]
+[*]The final layout should be:
 [code]<game>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
 <game>/mods/Sts2WinratePreview/Sts2WinratePreview.json
 <game>/mods/Sts2WinratePreview/helper/Sts2CombatCore.exe  (+ runtime files)[/code]
 [*]Launch the game and start a run — the band appears on the map.
 [/list]
-[i]Windows x64. The bundled helper is self-contained — no separate .NET install needed.[/i]
+[i]Windows x64. The helper is self-contained — no separate .NET install needed.[/i]
 
 [size=5][b]Configuration (optional — environment variables)[/b][/size]
 [list]
@@ -97,7 +101,7 @@ Author: [b]inggom[/b]
 
 [size=5][b]작동 방식[/b][/size]
 [list=1]
-[*]번들된 헤드리스 헬퍼([i]Sts2CombatCore[/i])가 [b]실제 게임 전투 엔진[/b]을 별도 프로세스로 구동합니다.
+[*]헤드리스 헬퍼([i]Sts2CombatCore[/i], 설치에서 별도 다운로드)가 [b]실제 게임 전투 엔진[/b]을 별도 프로세스로 구동합니다.
 [*]맵을 열면 모드가 현재 덱·유물·포션·HP를 [b]헬퍼 프로세스 풀[/b]에 보내, 다가올 각 전투를 승/패까지 시뮬레이션합니다.
 [*]전투당 약 1초 내로 밴드가 뜹니다. 사양이 좋을수록 헬퍼가 많아져 더 빠릅니다.
 [/list]
@@ -105,13 +109,17 @@ Author: [b]inggom[/b]
 [size=5][b]설치[/b][/size]
 [list=1]
 [*]STS2 모드 로더가 설치돼 있어야 합니다.
-[*]압축을 게임 [b]mods[/b] 폴더에 풀어 아래 구조가 되게 합니다:
+[*]이 모드 압축을 게임 [b]mods[/b] 폴더에 풉니다.
+[*][b]헬퍼를 받으세요[/b] (~42 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). 본인 게임 브랜치에 맞는 것을 받아 [b]같은[/b] mods 폴더에 풉니다:
+ [list][*][b]스테이블[/b](기본): [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip]Sts2WinratePreview-helper-v0.1.3-stable.zip[/url]
+[*][b]베타[/b] 브랜치: [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip]Sts2WinratePreview-helper-v0.1.3-beta.zip[/url][/list]
+[*]최종 구조:
 [code]<게임>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
 <게임>/mods/Sts2WinratePreview/Sts2WinratePreview.json
 <게임>/mods/Sts2WinratePreview/helper/Sts2CombatCore.exe  (+ 런타임 파일)[/code]
 [*]게임을 실행하고 런을 시작하면 맵 화면에 밴드가 나타납니다.
 [/list]
-[i]Windows x64. 번들된 헬퍼는 자체 포함(self-contained)이라 별도 .NET 설치가 필요 없습니다.[/i]
+[i]Windows x64. 헬퍼는 자체 포함(self-contained)이라 별도 .NET 설치가 필요 없습니다.[/i]
 
 [size=5][b]설정 (선택 — 환경 변수)[/b][/size]
 [list]
