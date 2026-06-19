@@ -29,11 +29,10 @@
 ## 설치
 1. STS2 모드 로더가 설치돼 있어야 합니다.
 2. 모드 zip(Nexus 페이지에서 받은 것)을 게임 `mods/` 폴더에 풉니다.
-3. **헬퍼를 받으세요** (~42 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). 본인 게임 브랜치에 맞는 것을 받아 **같은 `mods/` 폴더에** 풉니다:
-   - **스테이블**(기본 브랜치): [Sts2WinratePreview-helper-v0.1.3-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip)
-   - **베타** 브랜치: [Sts2WinratePreview-helper-v0.1.3-beta.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip)
+3. **헬퍼를 받으세요** (~45 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). **같은 `mods/` 폴더에** 풉니다:
+   - [Sts2WinratePreview-helper-v0.1.4-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.4/Sts2WinratePreview-helper-v0.1.4-stable.zip)
 
-   <sub>SHA-256 — 스테이블: `3401ad3752d8b850a980e7b5bd4bde6cf9e6e1e5cc7254b92446627e1c1452eb` · 베타: `487066cf60d8f05cb64d89f51af65b34497521f8146b219a593e164c86d316c8`</sub>
+   <sub>SHA-256: `0e8a233ba7b3db4309a9ce2c84b71a6430f12e6f21a28778d7db832a4a312595`</sub>
 4. 최종 구조:
    ```
    <게임>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
@@ -56,9 +55,9 @@
 - 밴드는 내장 AI 수준의 플레이를 막 인카운터에 표본추출한 것 — 보장이 아닌 **참고용**으로 보세요.
 
 ## 호환성
-**슬레이 더 스파이어 2 — public(기본) 브랜치, Steam 빌드 `23478716` (2026-06-02)** (sts2.dll 0.1.0), Windows x64 기준으로 빌드·테스트했습니다.
+**슬레이 더 스파이어 2 — public(기본) 브랜치, Steam 빌드 `23811903` (v0.107)** (sts2.dll 0.1.0), Windows x64 기준으로 빌드·테스트했습니다.
 
-STS2는 얼리 액세스라 업데이트가 잦습니다. 모드와 헬퍼는 게임 내부 API에 묶여 있어, 게임 업데이트(및 stable보다 앞서 가는 **beta** 브랜치)로 깨질 수 있으며 그때는 모드 업데이트가 필요합니다. 패치 후 밴드가 안 뜨면 모드 업데이트를 확인하세요.
+STS2는 얼리 액세스라 업데이트가 잦습니다. 모드와 헬퍼는 게임 내부 API에 묶여 있어, 게임 업데이트로 깨질 수 있으며 그때는 모드 업데이트가 필요합니다. 패치 후 밴드가 안 뜨면 모드 업데이트를 확인하세요.
 
 ## 제작 / 라이선스
 - 제작자: **inggom**

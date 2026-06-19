@@ -29,11 +29,10 @@ The helper plays with a **rollout-improved "search" policy** that is floor-guard
 ## Install
 1. Have an STS2 mod loader set up.
 2. Extract the mod zip (from the Nexus page) into your game's `mods/` folder.
-3. **Download the helper** (~42 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the **same** `mods/` folder. Pick the build matching your game branch:
-   - **Stable** (default branch): [Sts2WinratePreview-helper-v0.1.3-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip)
-   - **Beta** branch: [Sts2WinratePreview-helper-v0.1.3-beta.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip)
+3. **Download the helper** (~45 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the **same** `mods/` folder:
+   - [Sts2WinratePreview-helper-v0.1.4-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.4/Sts2WinratePreview-helper-v0.1.4-stable.zip)
 
-   <sub>SHA-256 — stable: `3401ad3752d8b850a980e7b5bd4bde6cf9e6e1e5cc7254b92446627e1c1452eb` · beta: `487066cf60d8f05cb64d89f51af65b34497521f8146b219a593e164c86d316c8`</sub>
+   <sub>SHA-256: `0e8a233ba7b3db4309a9ce2c84b71a6430f12e6f21a28778d7db832a4a312595`</sub>
 4. The final layout should be:
    ```
    <game>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
@@ -56,9 +55,9 @@ The helper plays with a **rollout-improved "search" policy** that is floor-guard
 - The band reflects play roughly as strong as the built-in AI, sampled over the act's encounters — treat it as guidance, not a guarantee.
 
 ## Compatibility
-Built and tested on **Slay the Spire 2 — public (default) branch, Steam build `23478716` (2026-06-02)** (sts2.dll 0.1.0), Windows x64.
+Built and tested on **Slay the Spire 2 — public (default) branch, Steam build `23811903` (v0.107)** (sts2.dll 0.1.0), Windows x64.
 
-Slay the Spire 2 is in Early Access and updates often. The mod and its helper are bound to the game's internal API, so a game update — and the **beta** branch, which runs ahead of stable — can break it until the mod is updated. If the band stops appearing after a game patch, check for a mod update.
+Slay the Spire 2 is in Early Access and updates often. The mod and its helper are bound to the game's internal API, so a game update can break it until the mod is updated. If the band stops appearing after a game patch, check for a mod update.
 
 ## Credits & License
 - Author: **inggom**
