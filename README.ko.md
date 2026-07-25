@@ -30,9 +30,12 @@
 1. STS2 모드 로더가 설치돼 있어야 합니다.
 2. 모드 zip(Nexus 페이지에서 받은 것)을 게임 `mods/` 폴더에 풉니다.
 3. **헬퍼를 받으세요** (~45 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). **같은 `mods/` 폴더에** 풉니다:
-   - [Sts2WinratePreview-helper-v0.1.4-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.4/Sts2WinratePreview-helper-v0.1.4-stable.zip)
+   - [Sts2WinratePreview-helper-v0.1.5-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.5/Sts2WinratePreview-helper-v0.1.5-stable.zip)
 
-   <sub>SHA-256: `0e8a233ba7b3db4309a9ce2c84b71a6430f12e6f21a28778d7db832a4a312595`</sub>
+   <sub>SHA-256: `577ec3ac63480c98ce7695898c9dbd647f6ab5adc9bea542220267a6cfded51f`</sub>
+
+   압축 파일 안에 `Sts2WinratePreview/helper/` 폴더가 들어 있어서, `mods/` 에
+   풀면 모드 DLL 옆에 헬퍼가 자동으로 자리잡습니다.
 4. 최종 구조:
    ```
    <게임>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
@@ -62,3 +65,8 @@ STS2는 얼리 액세스라 업데이트가 잦습니다. 모드와 헬퍼는 �
 ## 제작 / 라이선스
 - 제작자: **inggom**
 - `Sts2CombatCore` 헤드리스 전투 엔진 기반.
+- 소스는 **MIT 라이선스** — [LICENSE](LICENSE) 참고. 포크·재사용 환영이며,
+  "combat simulation by Sts2CombatCore (inggom)" 정도의 출처 표기면 충분합니다.
+- 이 모드는 **슬레이 더 스파이어 2 게임 파일을 포함하지 않으며**, 절대 함께
+  배포해서는 안 됩니다. 헬퍼는 런타임에 사용자 본인 설치본의 `sts2.dll` 을
+  참조합니다. 게임과 그 콘텐츠의 권리는 Mega Crit 에 있습니다.

@@ -53,7 +53,7 @@ public partial class MainFile : Node
             if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("STS2_WINRATE_SELFTEST")))
                 Task.Run(SelfTest);
 
-            Logger.Info($"[{ModId}] initialized (v0.1.3).");
+            Logger.Info($"[{ModId}] initialized (v0.1.5).");
         }
         catch (Exception ex)
         {

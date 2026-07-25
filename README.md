@@ -30,9 +30,12 @@ The helper plays with a **rollout-improved "search" policy** that is floor-guard
 1. Have an STS2 mod loader set up.
 2. Extract the mod zip (from the Nexus page) into your game's `mods/` folder.
 3. **Download the helper** (~45 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the **same** `mods/` folder:
-   - [Sts2WinratePreview-helper-v0.1.4-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.4/Sts2WinratePreview-helper-v0.1.4-stable.zip)
+   - [Sts2WinratePreview-helper-v0.1.5-stable.zip](https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.5/Sts2WinratePreview-helper-v0.1.5-stable.zip)
 
-   <sub>SHA-256: `0e8a233ba7b3db4309a9ce2c84b71a6430f12e6f21a28778d7db832a4a312595`</sub>
+   <sub>SHA-256: `577ec3ac63480c98ce7695898c9dbd647f6ab5adc9bea542220267a6cfded51f`</sub>
+
+   The archive contains a `Sts2WinratePreview/helper/` folder, so extracting it
+   into `mods/` lands the helper next to the mod DLL automatically.
 4. The final layout should be:
    ```
    <game>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
@@ -62,3 +65,8 @@ Slay the Spire 2 is in Early Access and updates often. The mod and its helper ar
 ## Credits & License
 - Author: **inggom**
 - Backed by the `Sts2CombatCore` headless combat engine.
+- Source is **MIT licensed** — see [LICENSE](LICENSE). Forks and reuse are welcome;
+  attribution like "combat simulation by Sts2CombatCore (inggom)" is plenty.
+- This mod ships **no Slay the Spire 2 game files** and must never be distributed
+  with any. The helper resolves `sts2.dll` from your own installation at runtime.
+  Slay the Spire 2 and its content belong to Mega Crit.

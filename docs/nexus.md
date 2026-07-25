@@ -19,7 +19,7 @@ Alternative shorter one-liner:
 ```bbcode
 [center][size=6][b]StS2 Winrate Preview[/b][/size][/center]
 
-[center][color=#e0a020][b]⚠ Requires a separate helper download (~42 MB) from GitHub — see [i]Install[/i] below.[/b][/color][/center]
+[center][color=#e0a020][b]⚠ Requires a separate helper download (~45 MB) from GitHub — see [i]Install[/i] below.[/b][/color][/center]
 
 A [b]Slay the Spire 2 map overlay[/b] that shows a combat-risk band — [b]Safe / Caution / Danger[/b] — with a [b]win-rate %[/b] and [b]combat-quality %[/b] for the upcoming [b]Monster / Elite / current-act Boss[/b], [i]before[/i] you pick a map node.
 
@@ -51,9 +51,9 @@ The estimate isn't a heuristic — it [b]simulates the real STS2 combat engine[/
 [list=1]
 [*]Have an STS2 mod loader set up.
 [*]Extract this mod archive into your game's [b]mods[/b] folder.
-[*][b]Download the helper[/b] (~42 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the [b]same[/b] mods folder. Pick the build matching your game branch:
- [list][*][b]Stable[/b] (default): [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip]Sts2WinratePreview-helper-v0.1.3-stable.zip[/url]
-[*][b]Beta[/b] branch: [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip]Sts2WinratePreview-helper-v0.1.3-beta.zip[/url][/list]
+[*][b]Download the helper[/b] (~45 MB, required — it runs the real combat engine and is hosted on GitHub due to its size) and extract it into the [b]same[/b] mods folder:
+ [list][*][url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.5/Sts2WinratePreview-helper-v0.1.5-stable.zip]Sts2WinratePreview-helper-v0.1.5-stable.zip[/url][/list]
+ [i]The archive contains a Sts2WinratePreview/helper/ folder, so extracting into mods/ puts the helper next to the mod DLL automatically.[/i]
 [*]The final layout should be:
 [code]<game>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
 <game>/mods/Sts2WinratePreview/Sts2WinratePreview.json
@@ -77,7 +77,7 @@ The estimate isn't a heuristic — it [b]simulates the real STS2 combat engine[/
 [/list]
 
 [size=5][b]Compatibility[/b][/size]
-Built and tested on [b]Slay the Spire 2 — public (default) branch, Steam build 23478716 (2026-06-02)[/b] (sts2.dll 0.1.0), Windows x64. STS2 is in Early Access; a game update — and the [b]beta[/b] branch, which runs ahead of stable — can break the mod until it is updated. If the band stops appearing after a patch, check for a mod update.
+Built and tested on [b]Slay the Spire 2 — public (default) branch, Steam build 23811903 (v0.107)[/b] (sts2.dll 0.1.0), Windows x64. STS2 is in Early Access; a game update — and the [b]beta[/b] branch, which runs ahead of stable — can break the mod until it is updated. If the band stops appearing after a patch, check for a mod update.
 
 Author: [b]inggom[/b]
 
@@ -85,7 +85,7 @@ Author: [b]inggom[/b]
 
 [center][size=6][b]한국어[/b][/size][/center]
 
-[center][color=#e0a020][b]⚠ 별도 헬퍼 다운로드(~42 MB, GitHub)가 필요합니다 — 아래 [i]설치[/i] 참고.[/b][/color][/center]
+[center][color=#e0a020][b]⚠ 별도 헬퍼 다운로드(~45 MB, GitHub)가 필요합니다 — 아래 [i]설치[/i] 참고.[/b][/color][/center]
 
 [b]슬레이 더 스파이어 2 맵 오버레이[/b] — 맵에서 노드를 고르기 [i]전에[/i], 다가올 [b]몬스터 / 엘리트 / 현재 막 보스[/b]에 대한 전투 위험도 밴드([b]안전 / 주의 / 위험[/b])와 [b]승률 %[/b], [b]전투 품질 %[/b]를 띄워 줍니다.
 
@@ -114,9 +114,9 @@ Author: [b]inggom[/b]
 [list=1]
 [*]STS2 모드 로더가 설치돼 있어야 합니다.
 [*]이 모드 압축을 게임 [b]mods[/b] 폴더에 풉니다.
-[*][b]헬퍼를 받으세요[/b] (~42 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). 본인 게임 브랜치에 맞는 것을 받아 [b]같은[/b] mods 폴더에 풉니다:
- [list][*][b]스테이블[/b](기본): [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-stable.zip]Sts2WinratePreview-helper-v0.1.3-stable.zip[/url]
-[*][b]베타[/b] 브랜치: [url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.3/Sts2WinratePreview-helper-v0.1.3-beta.zip]Sts2WinratePreview-helper-v0.1.3-beta.zip[/url][/list]
+[*][b]헬퍼를 받으세요[/b] (~45 MB, 필수 — 실제 전투 엔진이며 용량 때문에 GitHub에서 별도 제공). [b]같은[/b] mods 폴더에 풉니다:
+ [list][*][url=https://github.com/ing-gom/sts2-winrate-preview/releases/download/v0.1.5/Sts2WinratePreview-helper-v0.1.5-stable.zip]Sts2WinratePreview-helper-v0.1.5-stable.zip[/url][/list]
+ [i]압축 파일 안에 Sts2WinratePreview/helper/ 폴더가 들어 있어서, mods/ 에 풀면 모드 DLL 옆에 헬퍼가 자동으로 자리잡습니다.[/i]
 [*]최종 구조:
 [code]<게임>/mods/Sts2WinratePreview/Sts2WinratePreview.dll
 <게임>/mods/Sts2WinratePreview/Sts2WinratePreview.json
@@ -140,7 +140,7 @@ Author: [b]inggom[/b]
 [/list]
 
 [size=5][b]호환성[/b][/size]
-[b]슬레이 더 스파이어 2 — public(기본) 브랜치, Steam 빌드 23478716 (2026-06-02)[/b] (sts2.dll 0.1.0), Windows x64 기준으로 테스트했습니다. STS2는 얼리 액세스라 게임 업데이트(및 stable보다 앞서 가는 [b]beta[/b] 브랜치)로 깨질 수 있으며, 그때는 모드 업데이트가 필요합니다. 패치 후 밴드가 안 뜨면 모드 업데이트를 확인하세요.
+[b]슬레이 더 스파이어 2 — public(기본) 브랜치, Steam 빌드 23811903 (v0.107)[/b] (sts2.dll 0.1.0), Windows x64 기준으로 테스트했습니다. STS2는 얼리 액세스라 게임 업데이트(및 stable보다 앞서 가는 [b]beta[/b] 브랜치)로 깨질 수 있으며, 그때는 모드 업데이트가 필요합니다. 패치 후 밴드가 안 뜨면 모드 업데이트를 확인하세요.
 
 제작자: [b]inggom[/b]
 ```
