@@ -9,7 +9,7 @@ headless helper process.
 - Helper exe resolvable. Resolution order (`WinrateHelperClient.EnumerateCandidates`):
   1. env `STS2_WINRATE_HELPER` (explicit path)
   2. `<mod>/helper/Sts2CombatCore.exe` (bundled — for distribution)
-  3. dev fallback `C:\Users\dev\sts2-combat-core\src\Sts2CombatCore\.godot\mono\temp\bin\Release\Sts2CombatCore.exe`
+  3. dev fallback `%USERPROFILE%\sts2-combat-core\src\Sts2CombatCore\.godot\mono\temp\bin\Release\Sts2CombatCore.exe`
 - Clone ONNX + vocab resolve relative to the helper (cwd-relative, then walk-up from the
   exe): `runs/clone_{Char}.onnx` and `python/sts2_combat/_vocab.json`. Only needed when
   `decision=clonehybrid`. Present under `sts2-combat-core/`.

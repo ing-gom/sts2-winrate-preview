@@ -235,7 +235,13 @@ public sealed class WinrateHelperClient : IDisposable
         if (!string.IsNullOrEmpty(modDir))
             yield return Path.Combine(modDir, "helper", "Sts2CombatCore.exe");
 
-        yield return @"C:\Users\dev\sts2-combat-core\src\Sts2CombatCore\.godot\mono\temp\bin\Release\Sts2CombatCore.exe";
+        // Dev fallback: a sibling sts2-combat-core build tree under the user's
+        // home directory. Only hit when neither the env var nor an installed
+        // helper/ folder resolved, so end users never reach it.
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(home))
+            yield return Path.Combine(home, "sts2-combat-core", "src", "Sts2CombatCore",
+                ".godot", "mono", "temp", "bin", "Release", "Sts2CombatCore.exe");
     }
 
     public void Dispose()
