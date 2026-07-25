@@ -68,5 +68,6 @@ Slay the Spire 2 is in Early Access and updates often. The mod and its helper ar
 - Source is **MIT licensed** — see [LICENSE](LICENSE). Forks and reuse are welcome;
   attribution like "combat simulation by Sts2CombatCore (inggom)" is plenty.
 - This mod ships **no Slay the Spire 2 game files** and must never be distributed
-  with any. The helper resolves `sts2.dll` from your own installation at runtime.
-  Slay the Spire 2 and its content belong to Mega Crit.
+  with any — see [NOTICE](NOTICE). The helper resolves `sts2.dll` from your own
+  installation at runtime. Slay the Spire 2 and its content belong to Mega Crit;
+  this is an unofficial fan-made mod.

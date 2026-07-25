@@ -1,0 +1,11 @@
+NOTICE — game content
+
+The MIT license in LICENSE covers only the source code in this repository.
+
+This mod contains no Slay the Spire 2 game files, and must not be distributed
+with any. At runtime the helper resolves `sts2.dll` from the user's own legally
+obtained installation.
+
+Slay the Spire 2, its assemblies, assets, names and content are the property of
+Mega Crit and are not licensed here. This project is an unofficial, fan-made
+mod and is not affiliated with or endorsed by Mega Crit.
