@@ -42,7 +42,31 @@ headless helper process.
   helper processes (≈ K× throughput; each ~110 MB, single-threaded, idle except during the
   map-open refresh — so cores, not RAM, are the limit). Bigger machine → more helpers → faster
   pool refresh. Override 1..32.
-- A query that exceeds 30 s is treated as a hung helper and recycled.
+- A query that exceeds `STS2_WINRATE_QUERY_TIMEOUT_MS` (60 s) is treated as a hung helper and recycled.
+
+## Helper lifetime (v0.1.6)
+Helpers must never outlive the game. Three layers, in order of reliability:
+
+1. **Kill-on-close job object** (`HelperJob.cs`) — every helper is assigned to a Win32 job
+   created with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. The kernel terminates the whole pool
+   the moment the game process disappears, for *any* reason (quit, crash, force-close,
+   taskkill), and regardless of what the helper is doing. This is the guarantee.
+2. **Helper-side watchdog** (`ParentWatchdog.cs`, armed by `--parent-pid`) — a background
+   thread in each helper that hard-exits on parent death, on a single query exceeding
+   `STS2_SERVER_HANG_SEC` (120 s, deliberately above the client's 60 s recycle so the client
+   stays primary), or after `STS2_SERVER_IDLE_SEC` (1800 s) with no request.
+3. **stdin EOF** — the server's `ReadLine` loop ends when the game closes the pipe. Only
+   observable while the helper is *blocked on ReadLine*, so it cannot cover a helper stuck
+   inside a query (the engine has a known synchronous combat loop — see the
+   `--checkpoint-parity` hang watchdog). Layers 1–2 exist for exactly that case.
+
+`AppDomain.ProcessExit` (MainFile) is a courtesy fast path, not a guarantee: under Godot's
+native host it is not reliably raised and never runs on a crash.
+
+**Verify:** with the mod active, open the map so the pool spawns, then quit the game (or
+kill it from Task Manager mid-refresh). `Get-Process Sts2CombatCore` must return nothing
+within ~1 s. Expect `helper job created (kill-on-close)` in the log at first spawn; a
+`AssignProcessToJobObject failed` warning means layer 1 is unavailable and only 2–3 apply.
 
 ## Troubleshooting
 - "helper not found": set `STS2_WINRATE_HELPER` to the absolute exe path.

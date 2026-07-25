@@ -348,10 +348,16 @@ public sealed class WinrateHelperClient : IDisposable
 
             if (exe == null) { error = "helper exe not found"; return false; }
 
+            // --parent-pid arms the helper's own watchdog: it exits when this game
+            // process dies, and self-terminates if a single query runs past the hang
+            // ceiling (the engine has a known synchronous combat loop that the
+            // helper's single-threaded ReadLine loop cannot break out of — such a
+            // helper never reaches EOF and would outlive the game). Older helper
+            // builds ignore unknown flags, so passing it is safe.
             var psi = new ProcessStartInfo
             {
                 FileName = exe,
-                Arguments = "--server",
+                Arguments = $"--server --parent-pid {Environment.ProcessId}",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardInput = true,
@@ -368,6 +374,9 @@ public sealed class WinrateHelperClient : IDisposable
             {
                 _proc = Process.Start(psi);
                 if (_proc == null) { error = "Process.Start returned null"; return false; }
+                // Tether to the kill-on-close job BEFORE anything else can fail, so the
+                // OS owns this process's lifetime even if we lose track of it.
+                HelperJob.TryAssign(_proc);
                 _stdin = _proc.StandardInput;
                 _stdout = _proc.StandardOutput;
                 _proc.ErrorDataReceived += (_, e) =>

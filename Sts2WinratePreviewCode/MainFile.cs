@@ -27,7 +27,11 @@ public partial class MainFile : Node
             harmony.PatchAll(typeof(MainFile).Assembly);
             Logger.Info($"[{ModId}] Harmony patches applied.");
 
-            // Make sure the headless helper child is torn down with the game.
+            // Fast path for a clean shutdown. NOT the guarantee — under Godot's native
+            // host this handler is not reliably raised, gets a ~2s budget for the whole
+            // pool, and never runs at all on a crash / Steam force-close. The actual
+            // guarantee is the kill-on-close job object (HelperJob) plus the helper's
+            // own watchdog (--parent-pid); see HelperJob for why both are needed.
             AppDomain.CurrentDomain.ProcessExit += (_, _) => WinrateHelperClient.Instance.Dispose();
 
             // Register the in-game mod options (Monster/Elite/Boss trials, 1–10) via
@@ -53,7 +57,7 @@ public partial class MainFile : Node
             if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("STS2_WINRATE_SELFTEST")))
                 Task.Run(SelfTest);
 
-            Logger.Info($"[{ModId}] initialized (v0.1.5).");
+            Logger.Info($"[{ModId}] initialized (v0.1.6).");
         }
         catch (Exception ex)
         {
